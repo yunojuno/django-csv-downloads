@@ -19,7 +19,7 @@ INSTALLED_APPS = (
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "my_app",
+    "django_csv",
 )
 
 MIDDLEWARE = [
@@ -74,6 +74,8 @@ LOGGING = {
 }
 
 ROOT_URLCONF = "tests.urls"
+
+CSV_DOWNLOAD_MAX_ROWS = 10000
 
 if not DEBUG:
     raise Exception("This settings file can only be used with DEBUG=True")

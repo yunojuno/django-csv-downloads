@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "my-app"
+name = "django-csv-downloads"
 version = "0.1.0"
-description = "Project template for Django app, using Poetry."
+description = "Django app for tracking queryset-backed CSV downloads"
 license = "MIT"
 authors = ["YunoJuno <code@yunojuno.com>"]
 maintainers = ["YunoJuno <code@yunojuno.com>"]
 readme = "README.md"
-homepage = "https://github.com/yunojuno/poetry-template"
-repository = "https://github.com/yunojuno/poetry-template"
-documentation = "https://github.com/yunojuno/poetry-template"
+homepage = "https://github.com/yunojuno/django-csv-downloads"
+repository = "https://github.com/yunojuno/django-csv-downloads"
+documentation = "https://github.com/yunojuno/django-csv-downloads"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
@@ -21,8 +21,9 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
 ]
-packages = [{ include = "my_app" }]
+packages = [{ include = "django_csv" }]
 
 [tool.poetry.dependencies]
 python = "^3.7"
