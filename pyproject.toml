@@ -10,7 +10,7 @@ homepage = "https://github.com/yunojuno/django-csv-downloads"
 repository = "https://github.com/yunojuno/django-csv-downloads"
 documentation = "https://github.com/yunojuno/django-csv-downloads"
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 3 - Alpha",
     "Environment :: Web Environment",
     "Framework :: Django",
     "Framework :: Django :: 2.2",
@@ -19,14 +19,13 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
 ]
 packages = [{ include = "django_csv" }]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 django = "^2.2 || ^3.0"
 
 [tool.poetry.dev-dependencies]

@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.CreateModel(
             name="CsvDownload",
+            options={"verbose_name": "CSV Download"},
             fields=[
                 (
                     "id",
