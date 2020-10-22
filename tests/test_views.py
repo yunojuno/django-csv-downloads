@@ -4,7 +4,8 @@ import pytest
 from django.contrib.auth.models import User
 
 from django_csv.models import CsvDownload
-from django_csv.views import download_csv
+from django_csv.views import CsvDownloadView, download_csv
+from tests.views import DownloadUsers
 
 
 @pytest.mark.django_db

@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from django.conf import settings
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
@@ -24,42 +26,28 @@ def download_csv(
     return response
 
 
-class DownloadForbidden(Exception):
-    pass
-
-
-class DownloadCsvView(View):
+class CsvDownloadView(View):
     """CBV for downloading CSVs."""
 
-    def authorize(self, request: HttpRequest) -> None:
-        """
-        Authorize the download request.
-
-        Raise DownloadForbidden if download is not permitted.
-
-        Default is to allow all authenticated users access.
-
-        """
-        if not request.user.is_authenticated:
-            raise DownloadForbidden()
+    def is_permitted(self, request: HttpRequest) -> bool:
+        """Return True if the download is permitted."""
+        raise NotImplementedError()
 
     def filename(self, request: HttpRequest) -> str:
         """Return download filename."""
         raise NotImplementedError()
 
-    def columns(self, request: HttpRequest) -> str:
+    def columns(self, request: HttpRequest) -> Sequence[str]:
         """Return columns to extract from the queryset."""
         raise NotImplementedError()
 
     def queryset(self, request: HttpRequest) -> QuerySet:
-        """Fetch the appropriate data for the user."""
+        """Return the data to be downloaded."""
         raise NotImplementedError()
 
     def get(self, request: HttpRequest) -> HttpResponse:
-        """Download CSV."""
-        try:
-            self.authorize(request)
-        except DownloadForbidden:
+        """Download data as CSV."""
+        if not self.is_permitted(request):
             return HttpResponseForbidden()
         return download_csv(
             request.user,

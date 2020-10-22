@@ -2,13 +2,12 @@ from django.contrib.auth.models import User
 from django.http.request import HttpRequest
 
 from django_csv.csv import QuerySetWriter
-from django_csv.views import DownloadCsvView, DownloadForbidden
+from django_csv.views import CsvDownloadView
 
 
-class DownloadUsers(DownloadCsvView):
-    def authorize(self, request: HttpRequest) -> None:
-        if not request.user.is_staff:
-            raise DownloadForbidden()
+class DownloadUsers(CsvDownloadView):
+    def is_permitted(self, request: HttpRequest) -> bool:
+        return request.user.is_staff
 
     def queryset(self, request: HttpRequest) -> QuerySetWriter:
         return User.objects.all()
