@@ -33,6 +33,10 @@ class CsvDownloadView(View):
         """Return True if the download is permitted."""
         raise NotImplementedError()
 
+    def user(self, request: HttpRequest) -> settings.AUTH_USER_MODEL:
+        """Return the user against whom to record the download."""
+        return request.user
+
     def filename(self, request: HttpRequest) -> str:
         """Return download filename."""
         raise NotImplementedError()
@@ -50,7 +54,7 @@ class CsvDownloadView(View):
         if not self.is_permitted(request):
             return HttpResponseForbidden()
         return download_csv(
-            request.user,
+            self.user(request),
             self.filename(request),
             self.queryset(request),
             *self.columns(request),
