@@ -83,3 +83,22 @@ class CustomUserAdmin(UserAdmin):
 
     download.short_description = "Download selected users"
 ```
+
+Example CBV
+
+```python
+class UserDownloadView(CsvDownloadView):
+    """Staff-only user downloads view."""
+
+    def is_permitted(self, request):
+        return request.user.is_staff
+
+    def filename(self, request):
+        return "users.csv"
+
+    def columns(self, request):
+        return ("first_name", "last_name", "email")
+
+    def queryset(self, request):
+        return User.objects.all()
+```
