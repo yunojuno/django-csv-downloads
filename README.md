@@ -62,3 +62,24 @@ Example of writing to an in-memory text buffer:
 >>> csv.write_csv(buffer, data, *columns)
 10
 ```
+
+Example of a custom admin action to download User data:
+
+```python
+class CustomUserAdmin(UserAdmin):
+
+    actions = ['download']
+    csv_fields = ("first_name", "last_name", "email", "is_staff")
+    csv_filename = "users.csv"
+
+    def download(self, request, queryset):
+        """Download selected users as a CSV."""
+        return download_csv(
+            user=request.user,
+            filename=CustomUserAdmin.csv_filename,
+            queryset=queryset,
+            *CustomUserAdmin.csv_fields
+        )
+
+    download.short_description = "Download selected users"
+```
