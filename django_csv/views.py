@@ -28,11 +28,8 @@ class DownloadForbidden(Exception):
     pass
 
 
-class DownloadCsv(View):
+class DownloadCsvView(View):
     """CBV for downloading CSVs."""
-
-    # list of columns to be extracted from the queryset
-    csv_columns = []
 
     def authorize(self, request: HttpRequest) -> None:
         """
@@ -50,21 +47,23 @@ class DownloadCsv(View):
         """Return download filename."""
         raise NotImplementedError()
 
+    def columns(self, request: HttpRequest) -> str:
+        """Return columns to extract from the queryset."""
+        raise NotImplementedError()
+
     def queryset(self, request: HttpRequest) -> QuerySet:
         """Fetch the appropriate data for the user."""
         raise NotImplementedError()
 
     def get(self, request: HttpRequest) -> HttpResponse:
-        """Download bookings as CSV."""
-        if not self.csv_columns:
-            raise ValueError("DownloadCsv subclass must specify csv_columns")
+        """Download CSV."""
         try:
             self.authorize(request)
         except DownloadForbidden:
             return HttpResponseForbidden()
         return download_csv(
             request.user,
-            self.filename(),
+            self.filename(request),
             self.queryset(request),
-            *self.csv_columns
+            *self.columns(request),
         )
