@@ -84,21 +84,23 @@ class CustomUserAdmin(UserAdmin):
     download.short_description = "Download selected users"
 ```
 
-Example CBV
+Example CBV that restricts queryset based on request.user:
 
 ```python
-class UserDownloadView(CsvDownloadView):
-    """Staff-only user downloads view."""
+class DownloadUsers(CsvDownloadView):
 
-    def is_permitted(self, request):
-        return request.user.is_staff
+    def get_queryset(self, request: HttpRequest) -> QuerySetWriter:
+        """Allow superusers to download Users."""
+        user = request.user
+        if request.user.is_anonymous:
+            raise ValueError("Anonymous users cannot download data")
+        if request.user.is_superuser:
+            return User.objects.all().order_by("first_name", "last_name")
+        return User.objects.none()
 
-    def filename(self, request):
+    def get_filename(self, request: HttpRequest) -> str:
         return "users.csv"
 
-    def columns(self, request):
-        return ("first_name", "last_name", "email")
-
-    def queryset(self, request):
-        return User.objects.all()
+    def get_columns(self, request: HttpRequest) -> str:
+        return ("first_name", "last_name")
 ```

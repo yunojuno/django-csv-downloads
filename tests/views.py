@@ -6,14 +6,18 @@ from django_csv.views import CsvDownloadView
 
 
 class DownloadUsers(CsvDownloadView):
-    def is_permitted(self, request: HttpRequest) -> bool:
-        return request.user.is_staff
 
-    def queryset(self, request: HttpRequest) -> QuerySetWriter:
-        return User.objects.all()
+    def get_queryset(self, request: HttpRequest) -> QuerySetWriter:
+        """Allow staff/superusers to download Users."""
+        user = request.user
+        if user.is_anonymous:
+            raise ValueError("Anonymous users cannot download data")
+        if any([user.is_staff, user.is_superuser]):
+            return User.objects.all().order_by("first_name", "last_name")
+        return User.objects.none()
 
-    def filename(self, request: HttpRequest) -> str:
+    def get_filename(self, request: HttpRequest) -> str:
         return "users.csv"
 
-    def columns(self, request: HttpRequest) -> str:
+    def get_columns(self, request: HttpRequest) -> str:
         return ("first_name", "last_name")

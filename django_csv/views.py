@@ -29,33 +29,34 @@ def download_csv(
 class CsvDownloadView(View):
     """CBV for downloading CSVs."""
 
-    def is_permitted(self, request: HttpRequest) -> bool:
-        """Return True if the download is permitted."""
-        raise NotImplementedError()
+    def get_user(self, request: HttpRequest) -> settings.AUTH_USER_MODEL:
+        """
+        Return the user against whom to record the download.
 
-    def user(self, request: HttpRequest) -> settings.AUTH_USER_MODEL:
-        """Return the user against whom to record the download."""
+        This is provided for cases where the request.user may not be the
+        user you wish to record the download against. Impersonation is the
+        canonical use case for overriding this.
+
+        """
         return request.user
 
-    def filename(self, request: HttpRequest) -> str:
+    def get_filename(self, request: HttpRequest) -> str:
         """Return download filename."""
         raise NotImplementedError()
 
-    def columns(self, request: HttpRequest) -> Sequence[str]:
+    def get_columns(self, request: HttpRequest) -> Sequence[str]:
         """Return columns to extract from the queryset."""
         raise NotImplementedError()
 
-    def queryset(self, request: HttpRequest) -> QuerySet:
+    def get_queryset(self, request: HttpRequest) -> QuerySet:
         """Return the data to be downloaded."""
         raise NotImplementedError()
 
     def get(self, request: HttpRequest) -> HttpResponse:
         """Download data as CSV."""
-        if not self.is_permitted(request):
-            return HttpResponseForbidden()
         return download_csv(
-            self.user(request),
-            self.filename(request),
-            self.queryset(request),
-            *self.columns(request),
+            self.get_user(request),
+            self.get_filename(request),
+            self.get_queryset(request),
+            *self.get_columns(request),
         )
