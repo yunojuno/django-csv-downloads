@@ -2,7 +2,7 @@ from typing import Sequence
 
 from django.conf import settings
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse
 from django.views import View
 
 from .csv import write_csv
