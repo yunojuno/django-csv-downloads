@@ -7,5 +7,5 @@ admin.autodiscover()
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("downloads/users.csv", DownloadUsers.as_view()),
+    path("downloads/users.csv", DownloadUsers.as_view(), name="download_users"),
 ]

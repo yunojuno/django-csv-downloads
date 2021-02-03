@@ -1,6 +1,7 @@
 from typing import Sequence
 
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.views import View
@@ -29,6 +30,10 @@ def download_csv(
 class CsvDownloadView(View):
     """CBV for downloading CSVs."""
 
+    def has_permission(self, request: HttpRequest) -> bool:
+        """Return True if the user has permission to download this file."""
+        return True
+
     def get_user(self, request: HttpRequest) -> settings.AUTH_USER_MODEL:
         """
         Return the user against whom to record the download.
@@ -42,18 +47,21 @@ class CsvDownloadView(View):
 
     def get_filename(self, request: HttpRequest) -> str:
         """Return download filename."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_columns(self, request: HttpRequest) -> Sequence[str]:
         """Return columns to extract from the queryset."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_queryset(self, request: HttpRequest) -> QuerySet:
         """Return the data to be downloaded."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get(self, request: HttpRequest) -> HttpResponse:
         """Download data as CSV."""
+        if not self.has_permission(request):
+            raise PermissionDenied
+
         return download_csv(
             self.get_user(request),
             self.get_filename(request),
