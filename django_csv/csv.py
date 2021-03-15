@@ -30,13 +30,14 @@ Example of writing to an in-memory text buffer:
 
 """
 import csv
-from io import BytesIO, TextIOWrapper
+import logging
 from typing import Any
 
-import boto3
 from django.db.models import QuerySet
 
 from .settings import MAX_ROWS
+
+logger = logging.getLogger(__name__)
 
 
 class QuerySetWriter:
@@ -52,12 +53,7 @@ class QuerySetWriter:
 
     """
 
-    def __init__(
-        self,
-        csvfile: Any,
-        queryset: QuerySet,
-        *columns: str,
-    ) -> None:
+    def __init__(self, csvfile: Any, queryset: QuerySet, *columns: str) -> None:
         self._writer = csv.writer(csvfile)
         self.columns = columns
         self.rows = queryset.values_list(*columns)
@@ -72,38 +68,16 @@ class QuerySetWriter:
         self.row_count = rows.count()
 
 
-def write_csv(csvfile: Any, queryset: QuerySet, *columns: str) -> int:
+def write_csv(
+    csvfile: Any,
+    queryset: QuerySet,
+    *columns: str,
+    header: bool = True,
+    max_rows: int = MAX_ROWS,
+) -> int:
     """Write QuerySet to fileobj in CSV format."""
     writer = QuerySetWriter(csvfile, queryset, *columns)
-    writer.write_header()
-    writer.write_rows()
+    if header:
+        writer.write_header()
+    writer.write_rows(max_rows=max_rows)
     return writer.row_count
-
-
-def export_to_s3(bucket: str, key: str, queryset: QuerySet, *columns: str) -> int:
-    """
-    Export data as a CSV direct to S3.
-
-    This function uses `boto3`, and relies on the environment settings
-    AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, as documented here:
-    https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#environment-variables
-
-    """
-    with BytesIO() as csv_bytes:
-        # wrap the bytes with a text wrapper so that csv.writer can use it
-        with TextIOWrapper(
-            csv_bytes,
-            encoding="utf-8",
-            newline="",
-            write_through=True,
-        ) as csv_str:
-            row_count = write_csv(csv_str, queryset, *columns)
-            csv_bytes.seek(0)
-            client = boto3.client("s3")
-            client.put_object(
-                Bucket=bucket,
-                Key=key,
-                Body=csv_bytes,
-                ContentType="text/csv",
-            )
-            return row_count
