@@ -30,11 +30,14 @@ Example of writing to an in-memory text buffer:
 
 """
 import csv
+import logging
 from typing import Any
 
 from django.db.models import QuerySet
 
 from .settings import MAX_ROWS
+
+logger = logging.getLogger(__name__)
 
 
 class QuerySetWriter:
@@ -50,12 +53,7 @@ class QuerySetWriter:
 
     """
 
-    def __init__(
-        self,
-        csvfile: Any,
-        queryset: QuerySet,
-        *columns: str,
-    ) -> None:
+    def __init__(self, csvfile: Any, queryset: QuerySet, *columns: str) -> None:
         self._writer = csv.writer(csvfile)
         self.columns = columns
         self.rows = queryset.values_list(*columns)
@@ -70,9 +68,16 @@ class QuerySetWriter:
         self.row_count = rows.count()
 
 
-def write_csv(csvfile: Any, queryset: QuerySet, *columns: str) -> int:
+def write_csv(
+    csvfile: Any,
+    queryset: QuerySet,
+    *columns: str,
+    header: bool = True,
+    max_rows: int = MAX_ROWS,
+) -> int:
     """Write QuerySet to fileobj in CSV format."""
     writer = QuerySetWriter(csvfile, queryset, *columns)
-    writer.write_header()
-    writer.write_rows()
+    if header:
+        writer.write_header()
+    writer.write_rows(max_rows=max_rows)
     return writer.row_count

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-csv-downloads"
-version = "0.3"
+version = "0.4"
 description = "Django app for enabling and tracking CSV downloads"
 license = "MIT"
 authors = ["YunoJuno <code@yunojuno.com>"]
@@ -27,6 +27,7 @@ packages = [{ include = "django_csv" }]
 [tool.poetry.dependencies]
 python = "^3.8"
 django = "^2.2 || ^3.0"
+boto3 = { version = "^1.17.27", optional = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

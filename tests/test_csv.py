@@ -50,14 +50,24 @@ class TestQuerySetWriter:
 
 
 @pytest.mark.django_db
-def test_write_csv():
+@pytest.mark.parametrize(
+    "header,max_rows,output_row_count,output_lines",
+    [
+        (True, 100, 3, 4),
+        (False, 100, 3, 3),
+        (True, 1, 1, 2),
+    ],
+)
+def test_write_csv(header, max_rows, output_row_count, output_lines):
     csvfile = StringIO()
     columns = ("first_name", "last_name")
     User.objects.create_user("user1")
     User.objects.create_user("user2")
     User.objects.create_user("user3")
-    row_count = csv.write_csv(csvfile, User.objects.all(), *columns)
+    row_count = csv.write_csv(
+        csvfile, User.objects.all(), *columns, header=header, max_rows=max_rows
+    )
     csvfile.seek(0)
     lines = csvfile.readlines()
-    assert row_count == 3
-    assert len(lines) == 4
+    assert row_count == output_row_count
+    assert len(lines) == output_lines

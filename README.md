@@ -29,7 +29,8 @@ def download_users(request: HttpRequest) -> HttpResponse:
 
 ## Settings
 
-There is a `CSV_DOWNLOAD_MAX_ROWS` setting that is used to truncate output. Defaults to 10000.
+There is a `CSV_DOWNLOAD_MAX_ROWS` setting that is used to truncate output. Defaults to 10000. This is a backstop, and can be overridden on a per use
+basis.
 
 ## Examples
 
@@ -61,6 +62,13 @@ Example of writing to an in-memory text buffer:
 >>> buffer = io.StringIO()
 >>> csv.write_csv(buffer, data, *columns)
 10
+```
+
+Example of writing directly to S3:
+
+```python
+>>> with s3.s3_stream("bucket_name", "object_key") as buffer:
+...     csv.write_csv(buffer, data, *columns)
 ```
 
 Example of a custom admin action to download User data:
