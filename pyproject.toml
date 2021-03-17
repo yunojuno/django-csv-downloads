@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-csv-downloads"
-version = "0.4.2.b0"
+version = "0.5"
 description = "Django app for enabling and tracking CSV downloads"
 license = "MIT"
 authors = ["YunoJuno <code@yunojuno.com>"]
