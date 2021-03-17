@@ -1,4 +1,3 @@
-import random
 from io import StringIO
 
 import pytest
@@ -8,21 +7,23 @@ from django.http import HttpResponse
 from django_csv import csv
 
 
-class TestQuerySetWriter:
+class TestBaseQuerySetWriter:
     def test_init(self):
         qs = User.objects.none()
         columns = ("first_name", "last_name", "email")
         fileobj = HttpResponse()
-        writer = csv.QuerySetWriter(fileobj, qs, *columns)
-        assert writer.row_count == 0
+        writer = csv.BaseQuerySetWriter(fileobj, qs, *columns)
         assert writer.columns == columns
+        assert writer.queryset == qs
+        assert writer.columns == columns
+        assert writer.max_rows == csv.MAX_ROWS
 
     @pytest.mark.django_db
     def test_write_header(self):
         qs = User.objects.none()
         csvfile = StringIO()
         columns = ("first_name", "last_name", "email")
-        writer = csv.QuerySetWriter(csvfile, qs, *columns)
+        writer = csv.BaseQuerySetWriter(csvfile, qs, *columns)
         writer.write_header()
         csvfile.seek(0)
         lines = csvfile.readlines()
@@ -30,23 +31,23 @@ class TestQuerySetWriter:
         assert lines[0].strip() == ",".join(columns)
 
     @pytest.mark.django_db
-    def test_write_rows(self):
+    @pytest.mark.parametrize(
+        "klass",
+        (csv.BulkQuerySetWriter, csv.PagedQuerySetWriter, csv.RowQuerySetWriter),
+    )
+    def test_write_rows(self, klass):
         user1 = User.objects.create_user("user1")
         user2 = User.objects.create_user("user2")
-        qs = User.objects.all()
+        qs = User.objects.all().order_by("id")
         csvfile = StringIO()
         columns = ("first_name", "last_name")
-        writer = csv.QuerySetWriter(csvfile, qs, *columns)
-        writer.write_rows(max_rows=2)
+        writer = klass(csvfile, qs, *columns)
+        assert writer.write_rows() == 2
         csvfile.seek(0)
         lines = csvfile.readlines()
         assert len(lines) == 2
-
-        def assert_row(row, user):
-            row = f"{user.first_name},{user.last_name}"
-
-        assert_row(lines[0], user1)
-        assert_row(lines[1], user2)
+        assert lines[0].strip() == f"{user1.first_name},{user1.last_name}"
+        assert lines[1].strip() == f"{user2.first_name},{user2.last_name}"
 
 
 @pytest.mark.django_db

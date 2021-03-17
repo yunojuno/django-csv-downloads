@@ -33,16 +33,20 @@ import csv
 import logging
 from typing import Any
 
+from django.core.paginator import Paginator
 from django.db.models import QuerySet
 
-from .settings import MAX_ROWS
+from .settings import DEFAULT_PAGE_SIZE, MAX_ROWS
 
 logger = logging.getLogger(__name__)
 
 
-class QuerySetWriter:
+class BaseQuerySetWriter:
     """
     Class used to write contents of a QuerySet to a CSV.
+
+    Do not use this class directly - use one of the subclasses, based
+    on your expected use case - data size, memory constraints etc.
 
     This class wraps the csv.writerow and csv.writerows functions, and
     maps queryset columns to CSV fields (via `values_list`). It is
@@ -53,19 +57,57 @@ class QuerySetWriter:
 
     """
 
-    def __init__(self, csvfile: Any, queryset: QuerySet, *columns: str) -> None:
-        self._writer = csv.writer(csvfile)
+    def __init__(
+        self, csvfile: Any, queryset: QuerySet, *columns: str, max_rows: int = MAX_ROWS
+    ) -> None:
+        self.writer = csv.writer(csvfile)
+        self.queryset = queryset
         self.columns = columns
-        self.rows = queryset.values_list(*columns)
-        self.row_count = 0
+        self.max_rows = max_rows
+
+    def rows(self) -> QuerySet:
+        """Return the rows to write as a capped values_list queryset."""
+        return self.queryset.values_list(*self.columns)[: self.max_rows]
 
     def write_header(self) -> None:
-        self._writer.writerow(self.columns)
+        self.writer.writerow(self.columns)
 
-    def write_rows(self, max_rows: int = MAX_ROWS) -> None:
-        """Write QuerySet contents out to CSV and set row_count."""
-        self._writer.writerows(rows := self.rows[:max_rows])
-        self.row_count = rows.count()
+    def write_rows(self) -> int:
+        raise NotImplementedError
+
+
+class BulkQuerySetWriter(BaseQuerySetWriter):
+    """Subclass of QuerySetWriter that writes out queryset in one go."""
+
+    def write_rows(self) -> int:
+        """Write the rows out in one go."""
+        self.writer.writerows(rows := self.rows())
+        return rows.count()
+
+
+class PagedQuerySetWriter(BaseQuerySetWriter):
+    """Subclass of QuerySetWriter that writes out queryset in pages."""
+
+    def __init__(self, *args: Any, page_size: int = DEFAULT_PAGE_SIZE, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self.page_size = page_size
+
+    def write_rows(self) -> int:
+        """Write the rows out in pages."""
+        paginator = Paginator(rows := self.rows(), self.page_size)
+        for page in paginator:
+            self.writer.writerows(page.object_list)
+        return rows.count()
+
+
+class RowQuerySetWriter(BaseQuerySetWriter):
+    """Subclass of QuerySetWriter that writes out queryset row-by-row."""
+
+    def write_rows(self, max_rows: int = MAX_ROWS) -> int:
+        """Write the rows out one-by-one."""
+        for row in (rows := self.rows()).iterator():
+            self.writer.writerow(row)
+        return rows.count()
 
 
 def write_csv(
@@ -75,9 +117,8 @@ def write_csv(
     header: bool = True,
     max_rows: int = MAX_ROWS,
 ) -> int:
-    """Write QuerySet to fileobj in CSV format."""
-    writer = QuerySetWriter(csvfile, queryset, *columns)
+    """Write QuerySet to fileobj in CSV format using BulkQuerySetWriter."""
+    writer = BulkQuerySetWriter(csvfile, queryset, *columns, max_rows=max_rows)
     if header:
         writer.write_header()
-    writer.write_rows(max_rows=max_rows)
-    return writer.row_count
+    return writer.write_rows()
