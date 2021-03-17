@@ -9,10 +9,10 @@ from django_csv import csv, s3
 
 @pytest.mark.django_db
 @mock.patch("django_csv.s3._upload_fileobj")
-def test_upload_fileobj(mock_upload):
+def test_upload_multipart(mock_upload):
     columns = ("first_name", "last_name")
     User.objects.create_user("user1")
-    with s3.s3_upload_fileobj("bucket_name", "filename") as fileobj:
+    with s3.s3_upload_multipart("bucket_name", "filename") as fileobj:
         row_count = csv.write_csv(fileobj, User.objects.all(), *columns)
         assert row_count == 1
     assert mock_upload.call_count == 1
@@ -24,10 +24,10 @@ def test_upload_fileobj(mock_upload):
 
 @pytest.mark.django_db
 @mock.patch("django_csv.s3._put_object")
-def test_s3_put_object(mock_upload):
+def test_s3_upload(mock_upload):
     columns = ("first_name", "last_name")
     User.objects.create_user("user1")
-    with s3.s3_put_object("bucket_name", "filename") as fileobj:
+    with s3.s3_upload("bucket_name", "filename") as fileobj:
         row_count = csv.write_csv(fileobj, User.objects.all(), *columns)
         assert row_count == 1
     assert mock_upload.call_count == 1

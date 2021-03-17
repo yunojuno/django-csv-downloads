@@ -111,14 +111,14 @@ class RowQuerySetWriter(BaseQuerySetWriter):
 
 
 def write_csv(
-    csvfile: Any,
+    fileobj: Any,
     queryset: QuerySet,
     *columns: str,
     header: bool = True,
     max_rows: int = MAX_ROWS,
 ) -> int:
     """Write QuerySet to fileobj in CSV format using BulkQuerySetWriter."""
-    writer = BulkQuerySetWriter(csvfile, queryset, *columns, max_rows=max_rows)
+    writer = BulkQuerySetWriter(fileobj, queryset, *columns, max_rows=max_rows)
     if header:
         writer.write_header()
     return writer.write_rows()

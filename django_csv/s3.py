@@ -28,7 +28,7 @@ def _upload_fileobj(bucket: str, key: str, fileobj: FileLikeObject) -> None:
 
 
 @contextlib.contextmanager
-def s3_upload_fileobj(bucket: str, key: str) -> Generator:
+def s3_upload_multipart(bucket: str, key: str) -> Generator:
     """
     Context manager used to write to S3 using upload_fileobj.
 
@@ -50,7 +50,7 @@ def s3_upload_fileobj(bucket: str, key: str) -> Generator:
 
 
 @contextlib.contextmanager
-def s3_put_object(bucket: str, key: str) -> Generator:
+def s3_upload(bucket: str, key: str) -> Generator:
     """
     Context manager used to write to S3 using put_object.
 
