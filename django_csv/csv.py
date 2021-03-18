@@ -95,8 +95,8 @@ class PagedQuerySetWriter(BaseQuerySetWriter):
     def write_rows(self) -> int:
         """Write the rows out in pages."""
         paginator = Paginator(rows := self.rows(), self.page_size)
-        for page in paginator:
-            self.writer.writerows(page.object_list)
+        for page_number in paginator.page_range:
+            self.writer.writerows(paginator.page(page_number).object_list)
         return rows.count()
 
 
