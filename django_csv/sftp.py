@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from django.db.models import QuerySet
 
 from .csv import write_csv
+from .settings import MAX_ROWS
 
 try:
     import paramiko
@@ -111,7 +112,7 @@ def write_csv_sftp(
     queryset: QuerySet,
     *columns: str,
     header: bool = True,
-    max_rows: int,
+    max_rows: int = MAX_ROWS,
 ) -> int:
     """
     Write a csv to sftp.

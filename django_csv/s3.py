@@ -7,6 +7,7 @@ from typing import IO, Generator, Tuple, Union
 from django.db.models import QuerySet
 
 from .csv import write_csv
+from .settings import MAX_ROWS
 
 try:
     import boto3
@@ -92,7 +93,7 @@ def write_csv_s3(
     queryset: QuerySet,
     *columns: str,
     header: bool = True,
-    max_rows: int,
+    max_rows: int = MAX_ROWS,
 ) -> int:
     """Write a csv to S3."""
     bucket, key = parse_url(url)
