@@ -2,51 +2,52 @@
 import contextlib
 import io
 import tempfile
-from typing import Generator, Optional
+from typing import Generator, Optional, TextIO, Tuple
+from urllib.parse import urlparse
+
+from django.db.models import QuerySet
+
+from .csv import write_csv
 
 try:
     import paramiko
 except ImportError:
     raise ImportError("You cannot use the django_csv.sftp module without paramiko.")
 
+# type used to represent "username:password@hostname:port/path" when parsed
+SFTPUrl = Tuple[str, str, str, int, str]
+
 
 @contextlib.contextmanager
 def sftp_upload(
-    hostname: str,
-    username: str,
-    filepath: str,
-    port: int = 22,
-    password: Optional[str] = None,
-    pkey: Optional[paramiko.PKey] = None,
-) -> Generator:
+    client: paramiko.SFTPClient, filepath: str
+) -> Generator[TextIO, None, None]:
     """
-    Return context manager that can be used to upload to csv.
+    Return context manager that can be used to upload to SFTP.
 
     This context manager writes to a NamedTemporaryFile and then uses
-    the paramiko client put method to upload the file.
+    the paramiko client `putfo` method to upload the file.
 
-    One of password / pkey must be passed - see paramiko docs.
-
-    >>> with sftp_upload("server", "user", "filename.csv", password="password") as fileobj:  # noqa
+    >>> with sftp_upload(client, "path/to/file.csv) as fileobj:  # noqa
     ...     write_csv(fileobj, queryset, "col1", "col2")
 
+    The client is not created inside the generator as it would have to then
+    handle all of the various authentication mechanisms that SSH / paramiko
+    support, and that is really up to the calling code. There is a convenience
+    function, `write_csv_sftp` that handles the basic use case of a username
+    and password auth.
+
     """
-    # triple-nested context managers looks complicated, but we are dealing with
-    # three objects that need cleanup post-use - the inner TextIO to which the
-    # csv is written, the middle TemporaryFile used to persist the csv to disk
-    # and the outer SFTP client through which the contents of the TemporaryFile
-    # are written.
-    with sftp_client(hostname, username, port, password, pkey) as client:
-        with tempfile.TemporaryFile() as fileobj:
-            with io.TextIOWrapper(
-                fileobj,
-                encoding="utf-8",
-                newline="",
-                write_through=True,
-            ) as buffer:
-                yield buffer
-                fileobj.seek(0)
-                client.putfo(fileobj, filepath)
+    with tempfile.TemporaryFile() as fileobj:
+        with io.TextIOWrapper(
+            fileobj,
+            encoding="utf-8",
+            newline="",
+            write_through=True,
+        ) as buffer:
+            yield buffer
+            fileobj.seek(0)
+            client.putfo(fileobj, filepath)
 
 
 @contextlib.contextmanager
@@ -56,7 +57,7 @@ def sftp_client(
     port: int = 22,
     password: Optional[str] = None,
     pkey: Optional[paramiko.PKey] = None,
-) -> Generator:
+) -> Generator[paramiko.SFTPClient, None, None]:
     """
     Connect to SFTP server and return client object.
 
@@ -77,3 +78,37 @@ def sftp_client(
         client.close()
     else:
         raise Exception("Unable to connect to remote server.")
+
+
+def parse_url(url: str) -> SFTPUrl:
+    """Parse and validate url."""
+    parts = urlparse(url)
+    if parts.scheme != "sftp":
+        raise ValueError("Invalid url: scheme must be 'sftp'.")
+    if not parts.hostname:
+        raise ValueError("Invalid url: hostname is missing.")
+    if not parts.username:
+        raise ValueError("Invalid url: username is missing.")
+    if not parts.password:
+        raise ValueError("Invalid url: password is missing.")
+    if not parts.port:
+        raise ValueError("Invalid url: port is missing.")
+    if not parts.path:
+        raise ValueError("Invalid url: file path is missing.")
+    return (parts.hostname, parts.username, parts.password, parts.port, parts.path)
+
+
+def write_csv_sftp(
+    url: str,
+    queryset: QuerySet,
+    *columns: str,
+    header: bool = True,
+    max_rows: int,
+) -> int:
+    """Write a csv to sftp."""
+    hostname, username, password, port, path = parse_url(url)
+    with sftp_client(hostname, username, port, password=password) as client:
+        with sftp_upload(client, path) as fileobj:
+            return write_csv(
+                fileobj, queryset, *columns, header=header, max_rows=max_rows
+            )

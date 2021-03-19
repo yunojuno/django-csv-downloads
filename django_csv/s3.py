@@ -2,7 +2,11 @@
 import contextlib
 from io import BytesIO, TextIOWrapper
 from tempfile import TemporaryFile
-from typing import IO, Generator, Union
+from typing import IO, Generator, Tuple, Union
+
+from django.db.models import QuerySet
+
+from .csv import write_csv
 
 try:
     import boto3
@@ -11,6 +15,8 @@ except ImportError:
 
 # type used to smooth over TemporaryFile <> BytesIO mismatch
 FileLikeObject = Union[IO[bytes], BytesIO]
+# type to represent an S3 address (bucket, key)
+S3Url = Tuple[str, str]
 
 
 # extracted out to facilitate testing
@@ -69,3 +75,26 @@ def s3_upload(bucket: str, key: str) -> Generator:
             yield buffer
             fileobj.seek(0)
             _put_object(bucket, key, fileobj)
+
+
+def parse_url(url: str) -> S3Url:
+    """Parse and validate url."""
+    bucket, key = url.split("/", 1)
+    if not bucket:
+        raise ValueError("Invalid url: bucket is missing.")
+    if not key:
+        raise ValueError("Invalid url: key is missing.")
+    return bucket, key
+
+
+def write_csv_s3(
+    url: str,
+    queryset: QuerySet,
+    *columns: str,
+    header: bool = True,
+    max_rows: int,
+) -> int:
+    """Write a csv to S3."""
+    bucket, key = parse_url(url)
+    with s3_upload(bucket, key) as fileobj:
+        return write_csv(fileobj, queryset, *columns, header=header, max_rows=max_rows)

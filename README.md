@@ -67,8 +67,24 @@ Example of writing to an in-memory text buffer:
 Example of writing directly to S3:
 
 ```python
->>> with s3.s3_stream("bucket_name", "object_key") as buffer:
-...     csv.write_csv(buffer, data, *columns)
+>>> with s3.s3_upload("bucket_name", "object_key") as buffer:
+...     csv.write_csv(fileobj, queryset, *columns)
+10
+>>> # one-line convenience function
+>>> s3.write_csv_s3("bucket_name/object_key", queryset, *columns)
+10
+```
+
+Example of writing directly to SFTP:
+
+```python
+# requires a paramiko.SFTPClient to have been created / connected.
+>>> with sft.sftp_upload(client, remote_filepath) as fileobj:
+...     write_csv(fileobj, queryset, *columns)
+10
+>>> # one-line convenience function
+>>> sftp.write_csv_sftp("sftp://user:pass@host:port/path", queryset, *columns)
+10
 ```
 
 Example of a custom admin action to download User data:
