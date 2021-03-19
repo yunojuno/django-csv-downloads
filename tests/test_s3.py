@@ -35,3 +35,22 @@ def test_s3_upload(mock_upload):
     assert call_args[0] == "bucket_name"
     assert call_args[1] == "filename"
     assert isinstance(call_args[2], BufferedIOBase)
+
+
+@pytest.mark.parametrize(
+    "url,bucket,key",
+    [
+        ("bucket/key", "bucket", "key"),
+        ("bucket/key.csv", "bucket", "key.csv"),
+        ("bucket/path/to/key", "bucket", "path/to/key"),
+        ("bucket/path/to/key.csv", "bucket", "path/to/key.csv"),
+    ],
+)
+def test_parse_url(url, bucket, key):
+    assert s3.parse_url(url) == (bucket, key)
+
+
+@pytest.mark.parametrize("url", ("", "bucket", "bucket:key", "key.csv"))
+def test_parse_url__error(url):
+    with pytest.raises(ValueError):
+        s3.parse_url(url)

@@ -82,6 +82,8 @@ def sftp_client(
 
 def parse_url(url: str) -> SFTPUrl:
     """Parse and validate url."""
+    if not url.startswith("sftp://"):
+        url = "sftp://" + url
     parts = urlparse(url)
     if parts.scheme != "sftp":
         raise ValueError("Invalid url: scheme must be 'sftp'.")
@@ -93,9 +95,15 @@ def parse_url(url: str) -> SFTPUrl:
         raise ValueError("Invalid url: password is missing.")
     if not parts.port:
         raise ValueError("Invalid url: port is missing.")
-    if not parts.path:
+    if not parts.path.lstrip("/"):
         raise ValueError("Invalid url: file path is missing.")
-    return (parts.hostname, parts.username, parts.password, parts.port, parts.path)
+    return (
+        parts.hostname,
+        parts.username,
+        parts.password,
+        parts.port,
+        parts.path.lstrip("/"),
+    )
 
 
 def write_csv_sftp(
@@ -105,9 +113,19 @@ def write_csv_sftp(
     header: bool = True,
     max_rows: int,
 ) -> int:
-    """Write a csv to sftp."""
+    """
+    Write a csv to sftp.
+
+    The url arg must be in the form:
+
+        sftp://username:password@hostname:port/path
+
+    All parts must exist, and a ValueError is raised if any
+    are missing.
+
+    """
     hostname, username, password, port, path = parse_url(url)
-    with sftp_client(hostname, username, port, password=password) as client:
+    with sftp_client(hostname, username, port=port, password=password) as client:
         with sftp_upload(client, path) as fileobj:
             return write_csv(
                 fileobj, queryset, *columns, header=header, max_rows=max_rows
