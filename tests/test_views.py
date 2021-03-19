@@ -26,7 +26,6 @@ def test_download_csv():
 
 @pytest.mark.django_db
 class TestCsvDownloadView:
-
     @mock.patch("django_csv.views.write_csv", lambda *args: 999)
     def test_has_permission(self, client):
         """Anonymous users should fail has_permission."""

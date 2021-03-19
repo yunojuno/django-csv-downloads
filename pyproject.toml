@@ -28,6 +28,7 @@ packages = [{ include = "django_csv" }]
 python = "^3.8"
 django = "^2.2 || ^3.0"
 boto3 = { version = "^1.17.27", optional = true }
+paramiko = {version = "^2.7.2", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
