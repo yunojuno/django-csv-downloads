@@ -48,6 +48,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-django = "*"
 tox = "*"
+types-paramiko = "*"
 
 [build-system]
 requires = ["poetry>=0.12"]
