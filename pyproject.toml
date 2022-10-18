@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-csv-downloads"
-version = "0.7.1"
+version = "0.8.0"
 description = "Django app for enabling and tracking CSV downloads"
 license = "MIT"
 authors = ["YunoJuno <code@yunojuno.com>"]
@@ -13,26 +13,26 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Web Environment",
     "Framework :: Django",
-    "Framework :: Django :: 2.2",
-    "Framework :: Django :: 3.0",
-    "Framework :: Django :: 3.1",
     "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
 ]
 packages = [{ include = "django_csv" }]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-django = "^2.2 || ^3.0 || ^4.0"
+django = "^3.2 || ^4.0"
 boto3 = { version = "^1.17.27", optional = true }
 paramiko = {version = "^2.7.2", optional = true}
 
 [tool.poetry.dev-dependencies]
-black = {version = "*", allow-prereleases = true}
+black = "*"
 coverage = "*"
 flake8 = "*"
 flake8-bandit = "*"
@@ -49,6 +49,10 @@ pytest-cov = "*"
 pytest-django = "*"
 tox = "*"
 types-paramiko = "*"
+
+[tool.poetry.extras]
+s3 = ["boto3"]
+sftp = ["paramiko"]
 
 [build-system]
 requires = ["poetry>=0.12"]

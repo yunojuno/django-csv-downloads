@@ -33,9 +33,6 @@ repos:
     rev: v0.910
     hooks:
       - id: mypy
-        additional_dependencies:
-          - types-geoip2
-          - types-paramiko
         args:
           - --disallow-untyped-defs
           - --disallow-incomplete-defs
