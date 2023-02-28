@@ -18,6 +18,7 @@ def download_csv(
     *columns: str,
     header: bool = True,
     max_rows: int = MAX_ROWS,
+    column_headers: list[str] | None = None,
 ) -> HttpResponse:
     """Download queryset as a CSV."""
     response = HttpResponse(content_type="text/csv")
@@ -28,6 +29,7 @@ def download_csv(
         *columns,
         header=header,
         max_rows=max_rows,
+        column_headers=column_headers,
     )
     response["X-Row-Count"] = row_count
     CsvDownload.objects.create(
@@ -73,6 +75,10 @@ class CsvDownloadView(View):
         """Return columns to extract from the queryset."""
         raise NotImplementedError
 
+    def get_column_headers(self, request: HttpRequest) -> list[str]:
+        """Return column headers to apply to the CSV."""
+        return self.get_columns(request)
+
     def get_queryset(self, request: HttpRequest) -> QuerySet:
         """Return the data to be downloaded."""
         raise NotImplementedError
@@ -89,4 +95,5 @@ class CsvDownloadView(View):
             *self.get_columns(request),
             header=self.add_header(request),
             max_rows=self.get_max_rows(request),
+            column_headers=self.get_column_headers(request),
         )
