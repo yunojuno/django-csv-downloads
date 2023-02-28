@@ -24,5 +24,5 @@ class DownloadUsers(CsvDownloadView):
     def get_columns(self, request: HttpRequest) -> List[str]:
         return ("first_name", "last_name")
 
-    def get_column_headers(self, request: HttpRequest) -> list[str] | None:
+    def get_column_headers(self, request: HttpRequest) -> List[str]:
         return ("given_name", "family_name")

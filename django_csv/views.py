@@ -9,6 +9,7 @@ from django.views import View
 from .csv import write_csv
 from .models import CsvDownload
 from .settings import MAX_ROWS
+from .types import OptionalSequence
 
 
 def download_csv(
@@ -18,7 +19,7 @@ def download_csv(
     *columns: str,
     header: bool = True,
     max_rows: int = MAX_ROWS,
-    column_headers: list[str] | None = None,
+    column_headers: OptionalSequence = None,
 ) -> HttpResponse:
     """Download queryset as a CSV."""
     response = HttpResponse(content_type="text/csv")
@@ -75,7 +76,7 @@ class CsvDownloadView(View):
         """Return columns to extract from the queryset."""
         raise NotImplementedError
 
-    def get_column_headers(self, request: HttpRequest) -> list[str]:
+    def get_column_headers(self, request: HttpRequest) -> List[str]:
         """Return column headers to apply to the CSV."""
         return self.get_columns(request)
 
