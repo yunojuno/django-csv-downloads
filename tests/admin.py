@@ -9,8 +9,9 @@ admin.site.unregister(User)
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    actions = ["download", "download_without_header"]
+    actions = ["download", "download_without_header", "download_with_custom_header"]
     csv_fields = ("first_name", "last_name", "email", "is_staff")
+    csv_header = ("given name", "family name", "email", "is_staff")
 
     @admin.action(description="Download users (default)")
     def download(self, request, queryset):
@@ -33,4 +34,12 @@ class CustomUserAdmin(UserAdmin):
             header=False,
         )
 
-    download.short_description = "Download selected users"
+    @admin.action(description="Download users (custom header)")
+    def download_with_custom_header(self, request, queryset):
+        return download_csv(
+            request.user,
+            "users.csv",
+            queryset,
+            *self.csv_fields,
+            column_headers=self.csv_header,
+        )

@@ -31,12 +31,13 @@ Example of writing to an in-memory text buffer:
 """
 import csv
 import logging
-from typing import Any
+from typing import Any, Sequence
 
 from django.core.paginator import Paginator
 from django.db.models import QuerySet
 
 from .settings import DEFAULT_PAGE_SIZE, MAX_ROWS
+from .types import OptionalSequence
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +70,13 @@ class BaseQuerySetWriter:
         """Return the rows to write as a capped values_list queryset."""
         return self.queryset.values_list(*self.columns)[: self.max_rows]
 
-    def write_header(self) -> None:
-        self.writer.writerow(self.columns)
+    def write_header(self, column_headers: OptionalSequence = None) -> None:
+        row: Sequence = self.columns
+        if column_headers:
+            if len(column_headers) != len(self.columns):
+                raise ValueError("Columns and headers do not match in length.")
+            row = column_headers
+        self.writer.writerow(row)
 
     def write_rows(self) -> int:
         raise NotImplementedError
@@ -116,9 +122,10 @@ def write_csv(
     *columns: str,
     header: bool = True,
     max_rows: int = MAX_ROWS,
+    column_headers: OptionalSequence = None,
 ) -> int:
     """Write QuerySet to fileobj in CSV format using BulkQuerySetWriter."""
     writer = BulkQuerySetWriter(fileobj, queryset, *columns, max_rows=max_rows)
     if header:
-        writer.write_header()
+        writer.write_header(column_headers=column_headers)
     return writer.write_rows()
