@@ -72,3 +72,40 @@ def test_write_csv(header, max_rows, output_row_count, output_lines):
     lines = csvfile.readlines()
     assert row_count == output_row_count
     assert len(lines) == output_lines
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "column_headers,header_row",
+    [
+        (None, "first_name,last_name"),
+        (["given_name", "family_name"], "given_name,family_name"),
+    ],
+)
+def test_write_csv__column_headers(column_headers, header_row):
+    csvfile = StringIO()
+    columns = ("first_name", "last_name")
+    column_headers = column_headers
+    _ = csv.write_csv(
+        csvfile,
+        User.objects.all(),
+        *columns,
+        column_headers=column_headers,
+    )
+    csvfile.seek(0)
+    header = csvfile.readline().strip()
+    assert header == header_row
+
+
+@pytest.mark.django_db
+def test_write_csv__column_headers__mismatch():
+    csvfile = StringIO()
+    columns = ("first_name", "last_name")
+    column_headers = ("foo", "bar", "baz")
+    with pytest.raises(ValueError):
+        csv.write_csv(
+            csvfile,
+            User.objects.all(),
+            *columns,
+            column_headers=column_headers,
+        )
