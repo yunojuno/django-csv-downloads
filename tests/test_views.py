@@ -9,7 +9,7 @@ from django_csv.views import download_csv
 
 
 @pytest.mark.django_db
-@mock.patch("django_csv.views.write_csv", lambda *args: 999)
+@mock.patch("django_csv.views.write_csv", lambda *args, **kwargs: 999)
 def test_download_csv():
     """Check that download_csv records the download."""
     user = User.objects.create_user("user")
@@ -26,13 +26,13 @@ def test_download_csv():
 
 @pytest.mark.django_db
 class TestCsvDownloadView:
-    @mock.patch("django_csv.views.write_csv", lambda *args: 999)
+    @mock.patch("django_csv.views.write_csv", lambda *args, **kwargs: 999)
     def test_has_permission(self, client):
         """Anonymous users should fail has_permission."""
         response = client.get(reverse("download_users"))
         assert response.status_code == 403
 
-    @mock.patch("django_csv.views.write_csv", lambda *args: 999)
+    @mock.patch("django_csv.views.write_csv", lambda *args, **kwargs: 999)
     def test_get(self, client):
         user = User.objects.create_user("user")
         client.force_login(user)

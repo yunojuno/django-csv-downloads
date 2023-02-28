@@ -20,7 +20,8 @@ class CsvDownload(models.Model):
         null=True, blank=True, help_text=_lazy("Rows downloaded")
     )
     columns = models.CharField(
-        max_length=500, help_text=_lazy("The list of column headers in the download")
+        max_length=500,
+        help_text=_lazy("The list of source columns included in the download"),
     )
 
     class Meta:

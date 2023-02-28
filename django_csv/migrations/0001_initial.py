@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -43,7 +42,7 @@ class Migration(migrations.Migration):
                 (
                     "columns",
                     models.CharField(
-                        help_text="The list of column headers in the download",
+                        help_text="The list of source columns included in the download",
                         max_length=500,
                     ),
                 ),

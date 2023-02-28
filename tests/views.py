@@ -1,3 +1,5 @@
+from typing import List
+
 from django.contrib.auth.models import User
 from django.http.request import HttpRequest
 
@@ -19,5 +21,5 @@ class DownloadUsers(CsvDownloadView):
     def get_filename(self, request: HttpRequest) -> str:
         return "users.csv"
 
-    def get_columns(self, request: HttpRequest) -> str:
+    def get_columns(self, request: HttpRequest) -> List[str]:
         return ("first_name", "last_name")

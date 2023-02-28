@@ -54,6 +54,7 @@ types-paramiko = "*"
 [tool.poetry.extras]
 s3 = ["boto3"]
 sftp = ["paramiko"]
+test = ["boto3", "paramiko"]
 
 [build-system]
 requires = ["poetry>=0.12"]
