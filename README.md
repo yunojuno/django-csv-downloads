@@ -47,6 +47,17 @@ Example of writing a QuerySet to a file:
 10  #<--- row count
 ```
 
+adding a custom header:
+
+```python
+>>> data = User.objects.all()
+>>> columns = ("first_name", "last_name", "email")
+>>> column_headers = ("given_name", "family_name", "email_address")
+>>> with open('users.csv', 'w') as csvfile:
+>>>     csv.write_csv(csvfile, data, *columns, column_headers=column_headers)
+10
+```
+
 Example of writing to an HttpResponse:
 
 ```python
