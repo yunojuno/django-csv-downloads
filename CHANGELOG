@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+### v1.2.1
+
+* Fix bug in custom writer implementation
+
 ## v1.2
 
 * Add support for custom file headers (#8)
