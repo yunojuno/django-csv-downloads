@@ -31,7 +31,7 @@ Example of writing to an in-memory text buffer:
 """
 import csv
 import logging
-from typing import Any, Sequence
+from typing import Any, Sequence, Type
 
 from django.core.paginator import Paginator
 from django.db.models import QuerySet
@@ -109,7 +109,7 @@ class PagedQuerySetWriter(BaseQuerySetWriter):
 class RowQuerySetWriter(BaseQuerySetWriter):
     """Subclass of QuerySetWriter that writes out queryset row-by-row."""
 
-    def write_rows(self, max_rows: int = MAX_ROWS) -> int:
+    def write_rows(self) -> int:
         """Write the rows out one-by-one."""
         for row in (rows := self.rows()).iterator():
             self.writer.writerow(row)
@@ -123,9 +123,13 @@ def write_csv(
     header: bool = True,
     max_rows: int = MAX_ROWS,
     column_headers: OptionalSequence = None,
+    writer_klass: Type[BaseQuerySetWriter] = BulkQuerySetWriter,
+    **writer_kwargs: Any,
 ) -> int:
     """Write QuerySet to fileobj in CSV format using BulkQuerySetWriter."""
-    writer = BulkQuerySetWriter(fileobj, queryset, *columns, max_rows=max_rows)
+    writer = writer_klass(
+        fileobj, queryset, *columns, max_rows=max_rows, **writer_kwargs
+    )
     if header:
         writer.write_header(column_headers=column_headers)
     return writer.write_rows()

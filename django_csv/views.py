@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List, Type
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
@@ -6,7 +6,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.views import View
 
-from .csv import write_csv
+from .csv import BaseQuerySetWriter, BulkQuerySetWriter, write_csv
 from .models import CsvDownload
 from .settings import MAX_ROWS
 from .types import OptionalSequence
@@ -20,6 +20,8 @@ def download_csv(
     header: bool = True,
     max_rows: int = MAX_ROWS,
     column_headers: OptionalSequence = None,
+    writer_klass: Type[BaseQuerySetWriter] = BulkQuerySetWriter,
+    **writer_kwargs: Any,
 ) -> HttpResponse:
     """Download queryset as a CSV."""
     response = HttpResponse(content_type="text/csv")
@@ -31,6 +33,8 @@ def download_csv(
         header=header,
         max_rows=max_rows,
         column_headers=column_headers,
+        writer_klass=writer_klass,
+        **writer_kwargs,
     )
     response["X-Row-Count"] = row_count
     CsvDownload.objects.create(
@@ -44,6 +48,16 @@ def download_csv(
 
 class CsvDownloadView(View):
     """CBV for downloading CSVs."""
+
+    writer_klass = BulkQuerySetWriter
+
+    def get_writer_klass(self) -> Type[BaseQuerySetWriter]:
+        # Override to provide a different writer
+        return self.writer_klass
+
+    def get_writer_kwargs(self) -> dict:
+        # custom kwargs for initialising the writer
+        return {}
 
     def has_permission(self, request: HttpRequest) -> bool:
         """Return True if the user has permission to download this file."""
@@ -97,4 +111,6 @@ class CsvDownloadView(View):
             header=self.add_header(request),
             max_rows=self.get_max_rows(request),
             column_headers=self.get_column_headers(request),
+            writer_klass=self.get_writer_klass(),
+            **self.get_writer_kwargs(),
         )
