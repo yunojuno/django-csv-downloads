@@ -19,8 +19,7 @@ class CsvDownload(models.Model):
     row_count = models.IntegerField(
         null=True, blank=True, help_text=_lazy("Rows downloaded")
     )
-    columns = models.CharField(
-        max_length=500,
+    columns = models.TextField(
         help_text=_lazy("The list of source columns included in the download"),
     )
 

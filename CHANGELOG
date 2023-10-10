@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+### v1.2.2
+
+* Swaps CSVDownload.columns from a 500-char constrained CharField to a
+  TextField with no set max_length. This is due the field being needlessly
+  limiting, some downloads will have a totalled column title size which
+  exceeds 500 chars.
+
 ### v1.2.1
 
 * Fix bug in custom writer implementation
