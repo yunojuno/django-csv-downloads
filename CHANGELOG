@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.3.1
+
+* Improves performance of `RowQuerySetWriter` by avoiding a call to `.count()`
+  on the queryset.
+
 ## v1.3
 
 * Add Django 4.2, 5.0 to classifiers and build matrix
