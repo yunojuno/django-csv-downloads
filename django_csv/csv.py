@@ -29,6 +29,7 @@ Example of writing to an in-memory text buffer:
     10
 
 """
+
 import csv
 import logging
 from typing import Any, Sequence, Type
@@ -111,9 +112,14 @@ class RowQuerySetWriter(BaseQuerySetWriter):
 
     def write_rows(self) -> int:
         """Write the rows out one-by-one."""
-        for row in (rows := self.rows()).iterator():
+        # Since using an iterator means the querysets result-cache is not populated,
+        # a call to .count() will cause a new database hit, which can be very expensive
+        # for large querysets. It's more efficient to use a manual counter here.
+        row_count = 0
+        for row in self.rows().iterator():
             self.writer.writerow(row)
-        return rows.count()
+            row_count += 1
+        return row_count
 
 
 def write_csv(

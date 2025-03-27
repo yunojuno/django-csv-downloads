@@ -1,4 +1,5 @@
 """Optional functions for uploading data direct to S3."""
+
 import contextlib
 from io import BytesIO, TextIOWrapper
 from tempfile import TemporaryFile

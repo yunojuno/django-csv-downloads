@@ -1,4 +1,5 @@
 """SFTP upload functions."""
+
 import contextlib
 import io
 import tempfile
