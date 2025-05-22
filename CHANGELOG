@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.4.0
+
+* Add Django 5.2 support
+* Drop support for Django versions before 4.2
+* Update ruff configuration to use "ruff check" syntax
+* Update GitHub Actions to only test Django main with Python 3.12+
+
 ## v1.3.1
 
 * Improves performance of `RowQuerySetWriter` by avoiding a call to `.count()`
