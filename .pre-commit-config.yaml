@@ -10,7 +10,7 @@ repos:
     rev: "v0.1.5"
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [check, --fix, --exit-non-zero-on-fix]
 
   # python static type checking
   - repo: https://github.com/pre-commit/mirrors-mypy
