@@ -28,8 +28,6 @@ python = "^3.12"
 django = ">=5.2,<7.0"
 boto3 = { version = "*", optional = true }
 paramiko = {version = "*", optional = true}
-types-paramiko = "^3.3.0.0"
-ruff = "^0.11.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
@@ -41,6 +39,7 @@ pytest-cov = "*"
 pytest-django = "*"
 tox = "*"
 types-paramiko = "*"
+ruff = "^0.11.2"
 
 [tool.poetry.extras]
 s3 = ["boto3"]
