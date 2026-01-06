@@ -4,8 +4,8 @@ Django app for tracking queryset-backed CSV downloads
 
 ### Version support
 
-The current version of the this app support **Python 3.8+** and **Django
-4.2+**
+The current version of the this app support **Python 3.12+** and **Django
+5.2-6.0**
 
 ## What does this app do?
 
